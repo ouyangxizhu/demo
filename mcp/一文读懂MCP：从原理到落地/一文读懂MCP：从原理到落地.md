@@ -1,4 +1,4 @@
-# 一文读懂MCP\-详细版本
+# 一文读懂MCP：从原理到落地
 
 # 什么是MCP
 
@@ -20,7 +20,7 @@ MCP（Model Context Protocol，模型上下文协议）是连接 AI 应用与外
 
 工具侧开发者只需要为每个外部系统开发 1 个 MCP 服务端，总共 N 个；AI 应用侧开发者只需要为自己的应用实现 1 个 MCP 客户端，总共 M 个。
 
-![image\.png](图片和附件/image.png)
+![image\.png](图片和附件/image%202.png)
 
 # 从一个例子讲起
 
@@ -102,9 +102,9 @@ call_tool结果：CallToolResult(
 
 可以看到：
 
-- list\_tools：服务端提供的工具列表，包含名称，描述，出入参等信息
+- list\_tools：查询服务端提供的工具列表，返回结果包含名称、描述、出入参等信息
 
-- call\_tool：调用query\_ticket方法返回的结果
+- call\_tool：调用服务端提供的query\_ticket工具，返回调用结果
 
 那么这个过程发生了什么呢？
 
@@ -330,11 +330,13 @@ if __name__ == "__main__":
 
 从上面的例子可以看出，MCP 定义了标准的客户端 \- 服务端架构，核心角色包括：
 
-- 宿主（Host）：用户直接交互的上层应用，比如 Claude 桌面端、Cursor 这类 IDE、自定义开发的智能体程序。
+|角色|说明|
+|---|---|
+|宿主（Host）|用户直接交互的上层应用，比如 Claude 桌面端、Cursor 这类 IDE、自定义开发的智能体程序。|
+|客户端（Client）|运行在宿主应用内部，负责和单个 MCP 服务端建立连接，每个客户端与对应服务端保持 1:1 的连接关系。|
+|服务端（Server）|独立运行的外部程序，通过标准 API 经客户端向 AI 模型暴露 tools、resources、prompts 等能力，比如：文件系统、数据库、代码仓库、业务 API 包装层。|
 
-- 客户端（Client）：运行在宿主应用内部，负责和单个 MCP 服务端建立连接，每个客户端与对应服务端保持 1:1 的连接关系。
-
-- 服务端（Server）：独立运行的外部程序，通过标准 API 经客户端向 AI 模型暴露tools、resources、prompts 等能力，比如：文件系统、数据库、代码仓库、业务 API 包装层
+![artifacts\_edited\_image\_202836\.png](图片和附件/artifacts_edited_image_202836.png)
 
 # 两种传输方式：stdio 与 Streamable HTTP
 
@@ -355,7 +357,7 @@ if __name__ == "__main__":
 |对比维度|旧 HTTP \+ SSE|Streamable HTTP|
 |---|---|---|
 |通信模型|`GET /sse` 接收消息，另用 `POST` 发送消息（通常为/messages/），双通道协同。|统一使用 `/mcp` 端点，通过 HTTP 方法完成通信。|
-|响应方式|依赖长期 SSE 连接。|普通请求返回 JSON，需要流式传输时按需返回 SSE。|
+|响应方式<br>|依赖长期 SSE 连接。|普通请求返回 JSON，需要流式传输时按需返回 SSE。|
 |会话与扩容|需维护连接与会话映射，常依赖粘性会话或共享状态。|可有状态也可无状态，可用 `Mcp-Session-Id` 管理会话，更易水平扩容。|
 |简单请求|一次 RPC 也要先建立持久 SSE 通道。|可直接完成一次性请求，无需维持长连接。|
 |基础设施与恢复|代理兼容性不稳定，断线重连与消息重放需额外处理。|更适配鉴权、网关和负载均衡，并支持断线恢复与消息重放。|
@@ -363,7 +365,7 @@ if __name__ == "__main__":
 
 
 
-![image\.png](图片和附件/image%202.png)
+![image\.png](图片和附件/image.png)
 
 下面是以stdio传输方式启动的例子
 
@@ -681,6 +683,8 @@ tation":"西","duration":"63"},{"instruction":"沿南长街向北行驶806米右
 官方发布公告：[https://www\.anthropic\.com/news/model\-context\-protocol](https://www.anthropic.com/news/model-context-protocol)
 
 查看有哪些 MCP：[https://mcp\.so/zh/servers](https://mcp.so/zh/servers)
+
+github地址：https://github\.com/techrooting/demo/tree/main/mcp
 
 
 
