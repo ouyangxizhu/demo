@@ -3,8 +3,9 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
+      <excludeFolder url="file://$MODULE_DIR$/todo_list_middle_ware/.venv" />
     </content>
-    <orderEntry type="jdk" jdkName="~/go/src/code.byted.org/ouyangxizhu/demo/.venv" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="~/go/src/code.byted.org/techrooting/demo/.venv" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
