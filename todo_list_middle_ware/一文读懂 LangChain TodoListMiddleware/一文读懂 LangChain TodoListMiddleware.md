@@ -1,16 +1,12 @@
 # 一文读懂 LangChain TodoListMiddleware
 
-![image\.png](图片和附件/image.png)
-
 # TodoListMiddleware是什么
 
 `TodoListMiddleware` 是 LangChain Agent 的预置中间件，让模型能够创建并维护结构化待办列表。官方把它描述为为 Agent 提供 task planning 和 tracking 能力的 middleware。
 
-简单来说，就是可以产生，结构化的todo list。概念比较抽象，直接看例子
-
 # 从一个例子讲起
 
-下面的最小示例含义：给 Agent 配置2个业务工具，再挂载 `TodoListMiddleware`，让agent写个demo
+概念比较抽象，直接看下面的最小示例，含义：给 Agent 配置 2 个业务工具，再挂载 TodoListMiddleware，让 Agent 写个 demo。
 
 ```python
 from pathlib import Path
@@ -120,8 +116,7 @@ World!"\n'
                     'args': {
                         'todos': [
                             {
-                                'content': '规划并创建 demo.py，定义 hello_world
-函数',
+                                'content': '规划并创建 demo.py，定义 hello_world函数',
                                 'status': 'completed'
                             },
                             {
@@ -139,10 +134,7 @@ World!"\n'
             ],
         ),
         ToolMessage(
-            content="Updated todo list to [{'content': '规划并创建 demo.py，定义
-hello_world 函数', 'status': 'completed'}, {'content': '运行测试验证 demo.py', 
-'status': 'in_progress'}, {'content': '根据测试结果给出总结', 'status': 
-'pending'}]",
+            content="Updated todo list to [{'content': '规划并创建 demo.py，定义hello_world 函数', 'status': 'completed'}, {'content': '运行测试验证 demo.py', 'status': 'in_progress'}, {'content': '根据测试结果给出总结', 'status': 'pending'}]",
             name='write_todos',
         ),
         AIMessage(
@@ -155,13 +147,7 @@ hello_world 函数', 'status': 'completed'}, {'content': '运行测试验证 dem
             ],
         ),
         ToolMessage(
-            content='============================= test session starts 
-==============================\nplatform darwin -- Python 3.13.16, pytest-9.1.1,
-pluggy-1.6.0\nrootdir: 
-/Users/bytedance/go/src/code.byted.org/techrooting/demo\nconfigfile: 
-pyproject.toml\nplugins: platformdirs-4.13.0, langsmith-0.14.7, 
-anyio-4.15.1\ncollected 0 items\n\n============================ no tests ran in 
-0.00s =============================\n',
+            content='============================= test session starts ==============================\nplatform darwin -- Python 3.13.16, pytest-9.1.1,pluggy-1.6.0\nrootdir: techrooting/demo\nconfigfile: pyproject.toml\nplugins: platformdirs-4.13.0, langsmith-0.14.7, anyio-4.15.1\ncollected 0 items\n\n============================ no tests ran in 0.00s =============================\n',
             name='run_tests',
         ),
         AIMessage(
@@ -171,8 +157,7 @@ anyio-4.15.1\ncollected 0 items\n\n============================ no tests ran in
                     'args': {
                         'todos': [
                             {
-                                'content': '规划并创建 demo.py，定义 hello_world
-函数',
+                                'content': '规划并创建 demo.py，定义 hello_world函数',
                                 'status': 'completed'
                             },
                             {
@@ -190,10 +175,7 @@ anyio-4.15.1\ncollected 0 items\n\n============================ no tests ran in
             ],
         ),
         ToolMessage(
-            content="Updated todo list to [{'content': '规划并创建 demo.py，定义
-hello_world 函数', 'status': 'completed'}, {'content': '运行测试验证 demo.py', 
-'status': 'completed'}, {'content': '根据测试结果给出总结', 'status': 
-'in_progress'}]",
+            content="Updated todo list to [{'content': '规划并创建 demo.py，定义hello_world 函数', 'status': 'completed'}, {'content': '运行测试验证 demo.py', 'status': 'completed'}, {'content': '根据测试结果给出总结', 'status': 'in_progress'}]",
             name='write_todos',
         ),
         AIMessage(
@@ -203,8 +185,7 @@ hello_world 函数', 'status': 'completed'}, {'content': '运行测试验证 dem
                     'args': {
                         'todos': [
                             {
-                                'content': '规划并创建 demo.py，定义 hello_world
-函数',
+                                'content': '规划并创建 demo.py，定义 hello_world函数',
                                 'status': 'completed'
                             },
                             {
@@ -785,4 +766,10 @@ Remember: If you only need to make a few tool calls to complete a task, and it i
 write_todos 用于跟踪工作，而不是交付答案。无论用户要求的是计算结果、摘要、对比还是数据，都必须在最后一次调用 write_todos 之后的消息中以文本形式给出。
 将最后一项待办事项标记为已完成，本身并不等同于向用户作出答复。
 ```
+
+![首行关注\.png](图片和附件/首行关注.png)
+
+![image\.png](图片和附件/image.png)
+
+
 
