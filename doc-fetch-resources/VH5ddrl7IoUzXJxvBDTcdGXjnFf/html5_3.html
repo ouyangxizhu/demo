@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="use-iframe" content="true">
+<meta name="html-box-height-mode" content="auto">
+<meta name="description" content="EncoderBackedStore 的源码委托链：同步与异步入口共用同步编解码逻辑，再分别调用底层批量方法；读取保持 None 与顺序，异常直接传播，键遍历不反解。">
+<title>同步与异步共用编解码语义，差别只在底层调用</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --brand:#2f6fed;--brand-2:#60a5fa;--amber:#f59e0b;--green:#10b981;
+    --red:#ef4444;--hot:#b42318;--ink:#1f2d3d;--ink-2:#334155;--mute:#94a3b8;--line:#e8edf3;
+  }
+  body{background:#fff;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);padding:16px 12px}
+  .f-title{font-size:19px;font-weight:800;text-align:center;margin-bottom:2px}
+  .f-sub{font-size:12px;color:var(--mute);text-align:center;margin-bottom:18px}
+  .flow{display:flex;flex-wrap:wrap;align-items:stretch;justify-content:center;gap:6px;max-width:1000px;margin:0 auto}
+  .step{flex:1 1 150px;min-width:140px;max-width:230px;border:1px solid var(--line);border-radius:11px;padding:12px 13px;background:linear-gradient(180deg,#fff,#fbfcfe);position:relative}
+  .step .no{width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+  .step b{display:block;font-size:13.5px;font-weight:800;margin-bottom:4px}
+  .step span{font-size:11.5px;color:var(--ink-2);line-height:1.5}
+  .step.hot{border-color:var(--hot);box-shadow:0 0 0 1px var(--hot) inset}
+  .step.hot .no{background:var(--hot)}
+  .step.hot b{color:var(--hot)}
+  .arrow{display:flex;align-items:center;justify-content:center;color:var(--brand-2);font-size:20px;font-weight:800;flex:0 0 auto;padding:0 2px}
+  .loop-note{max-width:1000px;margin:14px auto 0;text-align:center;font-size:11px;color:var(--mute)}
+  @media(max-width:640px){.flow{flex-direction:column;align-items:stretch}.step{max-width:none}.arrow{transform:rotate(90deg);padding:2px 0}}
+</style>
+</head>
+<body>
+  <div class="f-title">同步与异步共用编解码语义，差别只在底层调用</div>
+  <div class="f-sub">EncoderBackedStore 源码委托链 · langchain-classic v1.4.5（commit 84ba23c）</div>
+
+  <div class="flow">
+    <div class="step"><div class="no">1</div><b>进入批量方法</b><span>mget / mset / mdelete 与 amget / amset / amdelete 接收同构批量参数</span></div>
+    <div class="arrow">→</div>
+    <div class="step hot"><div class="no">2</div><b>同步完成编解码预处理</b><span>键先全量编码；mset 同时序列化值。异步入口也在事件循环线程执行这一步</span></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="no">3</div><b>选择委托路径</b><span>同步直接调用 store.m*；异步 await store.am*，包装层不另建执行器</span></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="no">4</div><b>底层执行批量操作</b><span>真正 I/O、原子性与并发语义由所包装 Store 决定</span></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="no">5</div><b>读取结果逐位恢复</b><span>mget / amget 仅反序列化非 None 值，并保留底层顺序与缺失占位</span></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="no">6</div><b>异常与遍历直接透传</b><span>编解码和后端异常不捕获；yield_keys 透传底层字符串键且不做反解</span></div>
+  </div>
+
+  <div class="loop-note">异步边界 · 若底层未原生覆写异步方法，最终仍由 BaseStore 的默认执行器桥接同步实现</div>
+</body>
+</html>

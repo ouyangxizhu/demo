@@ -321,7 +321,7 @@ rich_print("返回结果：",result)
 #             content='============================= test session starts
 # ==============================\nplatform darwin -- Python 3.13.16, pytest-9.1.1,
 # pluggy-1.6.0\nrootdir:
-# /Users/bytedance/go/src/code.byted.org/techrooting/demo\nconfigfile:
+# techrooting/demo\nconfigfile:
 # pyproject.toml\nplugins: platformdirs-4.13.0, langsmith-0.14.7,
 # anyio-4.15.1\ncollected 0 items\n\n============================ no tests ran in
 # 0.00s =============================\n',

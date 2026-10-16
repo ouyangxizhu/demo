@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="use-iframe" content="true">
+<meta name="html-box-height-mode" content="auto">
+<meta name="description" content="LangChain Core Store 的三层协作关系：BaseStore 定义批量契约，EncoderBackedStore 转换业务键值，内存、文件或外部后端承担实际存储；同时标明 ByteStore 只是类型别名。">
+<title>Store 不是一组并列类，而是契约、适配与后端三层</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --brand:#2f6fed;--brand-2:#60a5fa;--amber:#f59e0b;--green:#10b981;
+    --red:#ef4444;--ink:#1f2d3d;--ink-2:#334155;--mute:#94a3b8;--line:#e8edf3;
+  }
+  body{background:#fff;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);padding:16px 12px}
+  .p-title{font-size:19px;font-weight:800;text-align:center;margin-bottom:2px}
+  .p-sub{font-size:12px;color:var(--mute);text-align:center;margin-bottom:18px}
+  .stack{display:flex;flex-direction:column;gap:12px;max-width:1000px;margin:0 auto}
+  .layer{border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;position:relative;background:linear-gradient(180deg,#fff,#fbfcfe)}
+  .layer-head{display:flex;align-items:baseline;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .badge{font-size:11px;font-weight:700;color:#fff;padding:2px 9px;border-radius:20px;white-space:nowrap}
+  .lname{font-size:15px;font-weight:800}
+  .ldesc{font-size:11.5px;color:var(--mute)}
+  .cells{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .cell{border:1px solid var(--line);border-radius:9px;padding:8px 9px;background:#fff}
+  .cell b{display:block;font-size:12.5px;color:var(--ink);margin-bottom:3px}
+  .cell span{font-size:11px;color:var(--ink-2);line-height:1.45}
+  .tag{display:inline-block;font-size:10px;color:var(--brand);background:#eef3fe;border-radius:5px;padding:1px 5px;margin:3px 3px 0 0}
+  .l4 .badge{background:var(--green)} .l4{border-left:5px solid var(--green)}
+  .l3 .badge{background:var(--brand)} .l3{border-left:5px solid var(--brand)}
+  .l2 .badge{background:var(--brand-2)} .l2{border-left:5px solid var(--brand-2)}
+  .l1 .badge{background:var(--amber)} .l1{border-left:5px solid var(--amber)}
+  .l0 .badge{background:#64748b} .l0{border-left:5px solid #64748b}
+  .axis-note{max-width:1000px;margin:14px auto 0;display:flex;justify-content:space-between;font-size:11px;color:var(--mute)}
+  .axis-note div{display:flex;align-items:center;gap:6px}
+  .arrow-up{font-weight:800;color:var(--green)}
+  @media(max-width:720px){.cells{grid-template-columns:repeat(2,1fr)}.axis-note{gap:12px;flex-wrap:wrap}}
+</style>
+</head>
+<body>
+  <div class="p-title">Store 不是一组并列类，而是契约、适配与后端三层</div>
+  <div class="p-sub">纵轴＝从调用语义到实际介质 · 分类依据＝抽象职责，而非类名相似度｜截至 2026-10-16</div>
+
+  <div class="stack">
+    <div class="layer l4">
+      <div class="layer-head"><span class="badge">契约层 L3</span><span class="lname">BaseStore[K,V] 定义最小批量接口</span><span class="ldesc">屏蔽后端差异，只承诺键值批处理与键遍历</span></div>
+      <div class="cells">
+        <div class="cell"><b>批量读取</b><span>mget / amget；按输入顺序返回，缺失位为 None</span></div>
+        <div class="cell"><b>批量写删</b><span>mset、mdelete 及异步对应方法</span></div>
+        <div class="cell"><b>键遍历</b><span>yield_keys / ayield_keys；仅有可选 prefix</span></div>
+        <div class="cell"><b>ByteStore 是类型别名</b><span>BaseStore[str, bytes]，不是独立后端类</span><br><span class="tag">langchain-core</span></div>
+      </div>
+    </div>
+
+    <div class="layer l3">
+      <div class="layer-head"><span class="badge">适配层 L2</span><span class="lname">EncoderBackedStore 转换业务键值</span><span class="ldesc">自身实现 BaseStore，同时组合一个底层 Store；不提供持久性</span></div>
+      <div class="cells">
+        <div class="cell"><b>键编码</b><span>key_encoder 把业务键 K 映射为稳定字符串</span></div>
+        <div class="cell"><b>值序列化</b><span>value_serializer 把 V 转成底层可存格式</span></div>
+        <div class="cell"><b>值反序列化</b><span>value_deserializer 恢复业务对象；None 原样保留</span></div>
+        <div class="cell"><b>组合而非介质</b><span>持久性、原子性与并发能力均由所包装后端决定</span><br><span class="tag">langchain-classic</span></div>
+      </div>
+    </div>
+
+    <div class="layer l2">
+      <div class="layer-head"><span class="badge">后端层 L1</span><span class="lname">可实例化实现承担实际存取</span><span class="ldesc">同一批量契约下，数据形态与生命周期明显不同</span></div>
+      <div class="cells">
+        <div class="cell"><b>InMemoryStore</b><span>dict[str, Any]；进程内、易失，适合对象与测试</span><br><span class="tag">langchain-core</span></div>
+        <div class="cell"><b>InMemoryByteStore</b><span>dict[str, bytes]；内存字节后端，不跨进程</span><br><span class="tag">langchain-core</span></div>
+        <div class="cell"><b>LocalFileStore</b><span>字符串键映射本地文件；单机字节持久化</span><br><span class="tag">langchain-classic</span></div>
+        <div class="cell"><b>外部适配实现</b><span>MongoDB、Redis、Astra DB 等可承载持久化与共享</span><br><span class="tag">integration</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="axis-note">
+    <div><span class="arrow-up">↑</span> 越往上：语义越通用、越可替换</div>
+    <div>越往下：越接近介质、部署约束越具体 <span class="arrow-up">↓</span></div>
+  </div>
+</body>
+</html>
